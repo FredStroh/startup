@@ -82,7 +82,6 @@ def test_file_path_raises_error():
             return True
     finally:
         # Clean up
-        import os
         if os.path.exists(temp_file):
             os.unlink(temp_file)
 

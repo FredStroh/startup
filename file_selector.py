@@ -151,7 +151,8 @@ class FileSelector:
     def _on_parent_clicked(self, button):
         """Handle the parent directory button click."""
         parent = self.current_path.parent
-        if parent != self.current_path:  # Check we're not at root
+        # Check we're not at filesystem root (where parent == self)
+        if parent != self.current_path:
             self.current_path = parent
             self._update_file_list()
     
