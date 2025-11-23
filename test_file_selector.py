@@ -52,6 +52,41 @@ def test_get_selected_returns_none_initially():
     print("✓ Get selected initial state test passed")
 
 
+def test_invalid_path_raises_error():
+    """Test that invalid path raises ValueError."""
+    try:
+        selector = FileSelector(start_path="/nonexistent/path/that/does/not/exist")
+        print("❌ Should have raised ValueError for nonexistent path")
+        return False
+    except ValueError as e:
+        assert "does not exist" in str(e).lower(), "Error message should mention path doesn't exist"
+        print("✓ Invalid path validation test passed")
+        return True
+
+
+def test_file_path_raises_error():
+    """Test that file path (not directory) raises ValueError."""
+    # Create a temporary file
+    import tempfile
+    with tempfile.NamedTemporaryFile(delete=False) as tf:
+        temp_file = tf.name
+    
+    try:
+        try:
+            selector = FileSelector(start_path=temp_file)
+            print("❌ Should have raised ValueError for file path")
+            return False
+        except ValueError as e:
+            assert "not a directory" in str(e).lower(), "Error message should mention it's not a directory"
+            print("✓ File path validation test passed")
+            return True
+    finally:
+        # Clean up
+        import os
+        if os.path.exists(temp_file):
+            os.unlink(temp_file)
+
+
 def run_tests():
     """Run all tests."""
     print("Running file selector tests...\n")
@@ -62,6 +97,12 @@ def run_tests():
         test_file_selector_widgets_exist()
         test_create_file_selector_function()
         test_get_selected_returns_none_initially()
+        
+        # Validation tests
+        if not test_invalid_path_raises_error():
+            return 1
+        if not test_file_path_raises_error():
+            return 1
         
         print("\n✅ All tests passed!")
         return 0

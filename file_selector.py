@@ -29,8 +29,20 @@ class FileSelector:
         
         Args:
             start_path (str, optional): Starting directory path. Defaults to current directory.
+        
+        Raises:
+            ValueError: If the provided path doesn't exist or is not a directory.
         """
-        self.current_path = Path(start_path) if start_path else Path.cwd()
+        if start_path:
+            path = Path(start_path).resolve()
+            if not path.exists():
+                raise ValueError(f"Path does not exist: {start_path}")
+            if not path.is_dir():
+                raise ValueError(f"Path is not a directory: {start_path}")
+            self.current_path = path
+        else:
+            self.current_path = Path.cwd()
+        
         self.selected_file = None
         
         # Create widgets
@@ -90,7 +102,20 @@ class FileSelector:
             
         except PermissionError:
             with self.output:
-                print(f"Permission denied: {self.current_path}")
+                print(f"⚠ Permission denied: {self.current_path}")
+        except FileNotFoundError:
+            with self.output:
+                print(f"⚠ Directory not found: {self.current_path}")
+            # Try to go back to parent or home
+            if self.current_path.parent.exists():
+                self.current_path = self.current_path.parent
+                self._update_file_list()
+            else:
+                self.current_path = Path.home()
+                self._update_file_list()
+        except (OSError, IOError) as e:
+            with self.output:
+                print(f"⚠ Error accessing directory: {e}")
     
     def _on_item_selected(self, change):
         """Handle item selection in the file list."""
